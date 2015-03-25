@@ -80,6 +80,7 @@ module OmniAuth
       end
 
       def request_phase
+
         options.issuer = issuer if options.issuer.blank?
         discover! if options.discovery
         redirect authorize_uri
@@ -198,6 +199,7 @@ module OmniAuth
       end
 
       def key_or_secret
+
         case options.client_signing_alg
           when :HS256, :HS384, :HS512
             return client_options.secret
@@ -208,7 +210,11 @@ module OmniAuth
               return parse_x509_key(options.client_x509_signing_key)
             end
           else
+            if(client_options.secret)
+              return client_options.secret
+            end
         end
+        return nil
       end
 
       def parse_x509_key(key)
