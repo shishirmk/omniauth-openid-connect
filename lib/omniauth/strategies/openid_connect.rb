@@ -76,7 +76,11 @@ module OmniAuth
       end
 
       def config
+        
+
         @config ||= ::OpenIDConnect::Discovery::Provider::Config.discover!(options.issuer)
+        
+        return @config
       end
 
       def request_phase
@@ -100,6 +104,7 @@ module OmniAuth
           client.redirect_uri = client_options.redirect_uri
           client.authorization_code = authorization_code
           access_token
+          
           super
         end
       rescue CallbackError => e
@@ -127,7 +132,8 @@ module OmniAuth
       end
 
       def public_key
-        if options.discover
+        if options.discovery
+                    
           config.public_keys.first
         else
           key_or_secret
@@ -138,6 +144,7 @@ module OmniAuth
 
       def issuer
         resource = "#{client_options.scheme}://#{client_options.host}" + ((client_options.port) ? ":#{client_options.port.to_s}" : '')
+
         ::OpenIDConnect::Discovery::Provider.discover!(resource).issuer
       end
 
@@ -158,7 +165,9 @@ module OmniAuth
           scope: options.scope,
           client_auth_method: options.client_auth_method
           )
+          
           _id_token = decode_id_token _access_token.id_token
+
           _id_token.verify!(
               issuer: options.issuer,
               client_id: client_options.identifier,
@@ -204,8 +213,9 @@ module OmniAuth
           when :HS256, :HS384, :HS512
             return client_options.secret
           when :RS256, :RS384, :RS512
+          
             if options.client_jwk_signing_key
-              return parse_jwk_key(options.client_jwk_signing_key)
+              return parse_jwk_key(options.client_jwk_signing_key.to_hash)
             elsif options.client_x509_signing_key
               return parse_x509_key(options.client_x509_signing_key)
             end
@@ -222,9 +232,9 @@ module OmniAuth
       end
 
       def parse_jwk_key(key)
-        json = JSON.parse(key)
-        jwk = json['keys'].first
-        create_rsa_key(jwk['n'], jwk['e'])
+        # json = JSON.parse(key)
+        # jwk = json['keys'].first
+        create_rsa_key(key['n'], key['e'])
       end
 
       def create_rsa_key(mod, exp)
