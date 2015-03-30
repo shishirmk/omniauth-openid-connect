@@ -76,8 +76,6 @@ module OmniAuth
       end
 
       def config
-        
-
         @config ||= ::OpenIDConnect::Discovery::Provider::Config.discover!(options.issuer)
         
         return @config
@@ -131,10 +129,11 @@ module OmniAuth
         client.authorization_uri(opts.reject{|k,v| v.nil?})
       end
 
-      def public_key
-        if options.discovery
-                    
-          config.public_keys.first
+      def public_key(kid=nil)
+
+        if options.discovery && kid.present?
+          key = config.jwks.select{|k| k["kid"] == kid}.try(:first)
+          JSON::JWK.decode key
         else
           key_or_secret
         end
@@ -161,12 +160,19 @@ module OmniAuth
 
       def access_token
         @access_token ||= lambda {
+
           _access_token = client.access_token!(
           scope: options.scope,
           client_auth_method: options.client_auth_method
           )
+
           
-          _id_token = decode_id_token _access_token.id_token
+          header = JWT.decoded_segments(_access_token.id_token, false).try(:[],0)
+          kid = header["kid"]
+
+          key = public_key(kid)
+
+          _id_token = decode_id_token _access_token.id_token, key
 
           _id_token.verify!(
               issuer: options.issuer,
@@ -177,8 +183,8 @@ module OmniAuth
         }.call()
       end
 
-      def decode_id_token(id_token)
-        ::OpenIDConnect::ResponseObject::IdToken.decode(id_token, public_key)
+      def decode_id_token(id_token, key)
+        ::OpenIDConnect::ResponseObject::IdToken.decode(id_token, key)
       end
 
 
