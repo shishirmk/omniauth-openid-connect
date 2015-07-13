@@ -21,6 +21,7 @@ Gem::Specification.new do |spec|
   spec.add_dependency 'omniauth', '~> 1.1'
   spec.add_dependency 'openid_connect', '= 0.7.3'
   spec.add_dependency 'addressable', '~> 2.3'
+  spec.add_dependency "jwt"
   spec.add_development_dependency "bundler", "~> 1.5"
   spec.add_development_dependency "minitest"
   spec.add_development_dependency "mocha"
@@ -32,5 +33,4 @@ Gem::Specification.new do |spec|
   spec.add_development_dependency "pry"
   spec.add_development_dependency "coveralls"
   spec.add_development_dependency "faker"
-  spec.add_development_dependency "jwt"
 end
