@@ -4,6 +4,7 @@ require 'net/http'
 require 'open-uri'
 require 'omniauth'
 require 'openid_connect'
+require 'jwt'
 
 module OmniAuth
   module Strategies
@@ -77,7 +78,7 @@ module OmniAuth
 
       def config
         @config ||= ::OpenIDConnect::Discovery::Provider::Config.discover!(options.issuer)
-        
+
         return @config
       end
 
@@ -102,7 +103,7 @@ module OmniAuth
           client.redirect_uri = client_options.redirect_uri
           client.authorization_code = authorization_code
           access_token
-          
+
           super
         end
       rescue CallbackError => e
@@ -166,8 +167,8 @@ module OmniAuth
           client_auth_method: options.client_auth_method
           )
 
-          
-          header = JWT.decoded_segments(_access_token.id_token, false).try(:[],0)
+
+          header = ::JWT.decoded_segments(_access_token.id_token, false).try(:[],0)
           kid = header["kid"]
 
           key = public_key(kid)
@@ -219,7 +220,7 @@ module OmniAuth
           when :HS256, :HS384, :HS512
             return client_options.secret
           when :RS256, :RS384, :RS512
-          
+
             if options.client_jwk_signing_key
               return parse_jwk_key(options.client_jwk_signing_key.to_hash)
             elsif options.client_x509_signing_key
