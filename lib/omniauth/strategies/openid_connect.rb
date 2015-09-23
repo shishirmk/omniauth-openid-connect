@@ -134,7 +134,7 @@ module OmniAuth
 
         if options.discovery && kid.present?
           key = config.jwks.select{|k| k["kid"] == kid}.try(:first)
-          JSON::JWK.decode key
+          JSON::JWK.new(key).to_key
         else
           key_or_secret
         end
