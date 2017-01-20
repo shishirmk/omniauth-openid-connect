@@ -175,6 +175,9 @@ module OmniAuth
 
           _id_token = decode_id_token _access_token.id_token, key
 
+          # TODO: Temporary patch for setting `nonce` to `nil`
+          _id_token.nonce = nil
+
           _id_token.verify!(
               issuer: options.issuer,
               client_id: client_options.identifier,
